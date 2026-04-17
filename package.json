@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "preview:cf": "wrangler pages dev dist",
     "deploy:cf": "npm run build && wrangler pages deploy dist --project-name diamond-track",
+    "firebase:add-pages-domain": "node scripts/add-firebase-authorized-domains.mjs",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
@@ -33,6 +34,7 @@
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
+    "google-auth-library": "^10.6.2",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",

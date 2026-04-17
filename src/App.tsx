@@ -46,6 +46,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [teamData, setTeamData] = useState({ name: '', logoURL: '' });
   const [coachName, setCoachName] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   React.useEffect(() => {
     if (profile?.teamId) {
@@ -119,6 +120,17 @@ export default function App() {
     );
   };
 
+  const handleGoogleLogin = async () => {
+    setLoginError('');
+    try {
+      await signInWithGoogle({ preferRedirect: isWebView() });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Google 登入失敗，請稍後再試。';
+      setLoginError(message);
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-power-blue text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -151,7 +163,7 @@ export default function App() {
           
           <div className="space-y-4">
             <button
-              onClick={signInWithGoogle}
+              onClick={handleGoogleLogin}
               className="w-full py-5 bg-power-yellow text-power-border power-button text-2xl"
             >
               <div className="flex items-center justify-center gap-3">
@@ -159,6 +171,12 @@ export default function App() {
                 登入球隊
               </div>
             </button>
+
+            {loginError && (
+              <div className="bg-power-red/20 border-2 border-power-red p-4 rounded-2xl text-sm font-black">
+                {loginError}
+              </div>
+            )}
 
             {isWebView() && (
               <motion.div 

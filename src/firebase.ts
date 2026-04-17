@@ -1,5 +1,13 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+  onAuthStateChanged,
+  browserPopupRedirectResolver,
+} from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot, addDoc, orderBy, limit, serverTimestamp, Timestamp, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
@@ -7,6 +15,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 // Connection test
 async function testConnection() {
@@ -74,12 +83,29 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 }
 
 // Auth Helpers
-export const signInWithGoogle = async () => {
+export const signInWithGoogle = async (options?: { preferRedirect?: boolean }) => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
+    if (options?.preferRedirect) {
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+
+    const result = await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
     return result.user;
   } catch (error) {
-    console.error("Error signing in with Google:", error);
+    const authError = error as { code?: string };
+    const shouldFallbackToRedirect =
+      authError?.code === 'auth/popup-blocked' ||
+      authError?.code === 'auth/popup-closed-by-user' ||
+      authError?.code === 'auth/cancelled-popup-request' ||
+      authError?.code === 'auth/operation-not-supported-in-this-environment';
+
+    if (shouldFallbackToRedirect) {
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+
+    console.error('Error signing in with Google:', error);
     throw error;
   }
 };
