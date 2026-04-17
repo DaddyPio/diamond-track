@@ -1,0 +1,171 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["coach", "player"] },
+        "teamId": { "type": "string", "description": "ID of the team the user belongs to" },
+        "playerNumber": { "type": "string", "description": "Jersey number for players" },
+        "position": { "type": "string", "description": "Primary position" },
+        "bio": { "type": "string" },
+        "playerType": { "type": "string", "enum": ["fielder", "twoWay"] },
+        "attendanceRate": { "type": "number" },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "batting": { "type": "number" },
+            "pitching": { "type": "number" },
+            "fielding": { "type": "number" },
+            "speed": { "type": "number" },
+            "stamina": { "type": "number" }
+          }
+        },
+        "gameStats": {
+          "type": "object",
+          "properties": {
+            "avg": { "type": "number" },
+            "obp": { "type": "number" },
+            "era": { "type": "number" }
+          }
+        },
+        "testStats": {
+          "type": "object",
+          "properties": {
+            "speedRun": { "type": "number" },
+            "pitchVelocity": { "type": "number" },
+            "longThrow": { "type": "number" }
+          }
+        }
+      },
+      "required": ["uid", "email", "role", "teamId"]
+    },
+    "PerformanceRecord": {
+      "title": "Performance Record",
+      "description": "Historical performance data for a player",
+      "type": "object",
+      "properties": {
+        "playerUid": { "type": "string" },
+        "teamId": { "type": "string" },
+        "date": { "type": "string" },
+        "gameStats": {
+          "type": "object",
+          "properties": {
+            "avg": { "type": "number" },
+            "obp": { "type": "number" },
+            "era": { "type": "number" }
+          }
+        },
+        "testStats": {
+          "type": "object",
+          "properties": {
+            "speedRun": { "type": "number" },
+            "pitchVelocity": { "type": "number" },
+            "longThrow": { "type": "number" }
+          }
+        }
+      },
+      "required": ["playerUid", "teamId", "date"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily attendance record for a team",
+      "type": "object",
+      "properties": {
+        "teamId": { "type": "string" },
+        "date": { "type": "string" },
+        "presentUids": { "type": "array", "items": { "type": "string" } },
+        "absentUids": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["teamId", "date", "presentUids", "absentUids"]
+    },
+    "InstructionCompletion": {
+      "title": "Instruction Completion",
+      "description": "Record of a player completing an instruction",
+      "type": "object",
+      "properties": {
+        "instructionId": { "type": "string" },
+        "playerUid": { "type": "string" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["instructionId", "playerUid", "completedAt"]
+    },
+    "Team": {
+      "title": "Team",
+      "description": "Baseball team information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "coachUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "coachUid"]
+    },
+    "TrainingLog": {
+      "title": "Training Log",
+      "description": "A record of a player's training session",
+      "type": "object",
+      "properties": {
+        "playerUid": { "type": "string" },
+        "teamId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "description": "e.g., Batting, Pitching, Gym" },
+        "description": { "type": "string" },
+        "duration": { "type": "number", "description": "Duration in minutes" },
+        "coachFeedback": { "type": "string" }
+      },
+      "required": ["playerUid", "teamId", "date", "type"]
+    },
+    "Instruction": {
+      "title": "Instruction",
+      "description": "Coach instructions for players or the whole team",
+      "type": "object",
+      "properties": {
+        "coachUid": { "type": "string" },
+        "teamId": { "type": "string" },
+        "targetUid": { "type": "string", "description": "Specific player UID or 'team'" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["coachUid", "teamId", "targetUid", "title", "content"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/teams/{teamId}": {
+      "schema": "Team",
+      "description": "Teams"
+    },
+    "/training_logs/{logId}": {
+      "schema": "TrainingLog",
+      "description": "Player training logs"
+    },
+    "/instructions/{instructionId}": {
+      "schema": "Instruction",
+      "description": "Coach instructions"
+    },
+    "/performance_records/{recordId}": {
+      "schema": "PerformanceRecord",
+      "description": "Historical performance data"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "Attendance",
+      "description": "Attendance records"
+    },
+    "/instruction_completions/{completionId}": {
+      "schema": "InstructionCompletion",
+      "description": "Instruction completion records"
+    }
+  }
+}

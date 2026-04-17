@@ -1,0 +1,261 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string
+    //   - photoURL: string
+    //   - role: string (required, 'coach' | 'player')
+    //   - teamId: string (required)
+    //   - playerNumber: string (optional)
+    //   - position: string (optional)
+    //   - bio: string (optional)
+    //   - playerType: string (optional, 'fielder' | 'twoWay')
+    //   - attendanceRate: number (optional)
+    //   - stats: map (optional)
+    //   - gameStats: map (optional)
+    //   - testStats: map (optional)
+    //
+    // Collection: teams
+    // Document ID: {teamId}
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - coachUid: string (required)
+    //   - createdAt: timestamp
+    //   - ratingStandards: map (optional)
+    //
+    // Collection: training_logs
+    // Document ID: {logId}
+    // Fields:
+    //   - playerUid: string (required)
+    //   - teamId: string (required)
+    //   - date: timestamp (required)
+    //   - type: string (required)
+    //   - description: string
+    //   - duration: number
+    //   - coachFeedback: string
+    //   - instructionId: string (optional)
+    //
+    // Collection: instructions
+    // Document ID: {instructionId}
+    // Fields:
+    //   - coachUid: string (required)
+    //   - teamId: string (required)
+    //   - targetUid: string (required, playerUid or 'team')
+    //   - title: string (required)
+    //   - content: string (required)
+    //   - createdAt: timestamp (required)
+    //   - isRead: bool
+    //
+    // Collection: performance_records
+    // Document ID: {recordId}
+    // Fields:
+    //   - playerUid: string (required)
+    //   - teamId: string (required)
+    //   - date: timestamp (required)
+    //   - type: string (required, 'game' | 'test')
+    //   - stats: map (required)
+    //
+    // Collection: attendance
+    // Document ID: {attendanceId}
+    // Fields:
+    //   - teamId: string (required)
+    //   - date: string (required, YYYY-MM-DD)
+    //   - presentUids: list (required)
+    //   - absentUids: list (required)
+    //
+    // Collection: instruction_completions
+    // Document ID: {completionId}
+    // Fields:
+    //   - instructionId: string (required)
+    //   - playerUid: string (required)
+    //   - teamId: string (required)
+    //   - completedAt: timestamp (required)
+    //
+    // Collection: notifications
+    // Document ID: {notificationId}
+    // Fields:
+    //   - recipientUid: string (required)
+    //   - teamId: string (required)
+    //   - title: string (required)
+    //   - content: string (required)
+    //   - type: string (required, 'instruction' | 'feedback' | 'completion')
+    //   - relatedId: string (optional)
+    //   - isRead: bool (required)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper to get current user's data without recursion
+    function getCurrentUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function sameTeam(teamId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamId == teamId;
+    }
+    
+    function isCoach() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'coach';
+    }
+
+    function isValidUser(data) {
+      return data.uid is string && 
+             data.email is string && 
+             data.role in ['coach', 'player'] &&
+             data.teamId is string &&
+             (!('displayName' in data) || data.displayName is string) &&
+             (!('photoURL' in data) || data.photoURL is string) &&
+             (!('playerNumber' in data) || data.playerNumber is string) &&
+             (!('position' in data) || data.position is string) &&
+             (!('bio' in data) || data.bio is string) &&
+             (!('playerType' in data) || data.playerType in ['fielder', 'twoWay']) &&
+             (!('attendanceRate' in data) || data.attendanceRate is number) &&
+             (!('stats' in data) || data.stats is map) &&
+             (!('gameStats' in data) || data.gameStats is map) &&
+             (!('testStats' in data) || data.testStats is map);
+    }
+
+    function isValidTeam(data) {
+      return data.id is string &&
+             data.name is string &&
+             data.coachUid is string;
+    }
+
+    function isValidTrainingLog(data) {
+      return data.playerUid is string &&
+             data.teamId is string &&
+             data.date is timestamp &&
+             data.type is string &&
+             (!('description' in data) || data.description is string) &&
+             (!('duration' in data) || data.duration is number) &&
+             (!('coachFeedback' in data) || data.coachFeedback is string);
+    }
+
+    function isValidInstruction(data) {
+      return data.coachUid is string &&
+             data.teamId is string &&
+             data.targetUid is string &&
+             data.title is string &&
+             data.content is string &&
+             data.createdAt is timestamp &&
+             (!('isRead' in data) || data.isRead is bool);
+    }
+
+    function isValidPerformanceRecord(data) {
+      return data.playerUid is string &&
+             data.teamId is string &&
+             (data.date is string || data.date is timestamp) &&
+             data.type in ['game', 'test'] &&
+             data.stats is map;
+    }
+
+    function isValidAttendance(data) {
+      return data.teamId is string &&
+             data.date is string &&
+             data.presentUids is list &&
+             data.absentUids is list;
+    }
+
+    function isValidInstructionCompletion(data) {
+      return data.instructionId is string &&
+             data.playerUid is string &&
+             data.teamId is string &&
+             data.completedAt is timestamp;
+    }
+
+    function isValidNotification(data) {
+      return data.recipientUid is string &&
+             data.teamId is string &&
+             data.title is string &&
+             data.content is string &&
+             data.type in ['instruction', 'feedback', 'completion'] &&
+             data.isRead is bool &&
+             data.createdAt is timestamp &&
+             (!('relatedId' in data) || data.relatedId is string);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // CRITICAL: isOwner(userId) must be first to avoid recursion when getCurrentUser() is called
+      allow read: if isAuthenticated() && (request.auth.uid == userId || sameTeam(resource.data.teamId));
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isAuthenticated() && (request.auth.uid == userId || (isCoach() && sameTeam(resource.data.teamId))) && isValidUser(request.resource.data);
+    }
+
+    match /teams/{teamId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidTeam(request.resource.data);
+      allow update: if isCoach() && sameTeam(teamId) && isValidTeam(request.resource.data);
+    }
+
+    match /training_logs/{logId} {
+      allow read: if isAuthenticated() && sameTeam(resource.data.teamId);
+      allow create: if isAuthenticated() && isOwner(request.resource.data.playerUid) && sameTeam(request.resource.data.teamId) && isValidTrainingLog(request.resource.data);
+      allow update: if isAuthenticated() && (isOwner(resource.data.playerUid) || (isCoach() && sameTeam(resource.data.teamId))) && isValidTrainingLog(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.playerUid);
+    }
+
+    match /instructions/{instructionId} {
+      allow read: if isAuthenticated() && sameTeam(resource.data.teamId);
+      allow create: if isCoach() && sameTeam(request.resource.data.teamId) && isValidInstruction(request.resource.data);
+      allow update: if isAuthenticated() && sameTeam(resource.data.teamId) && (isCoach() || isOwner(resource.data.targetUid)) && isValidInstruction(request.resource.data);
+      allow delete: if isCoach() && sameTeam(resource.data.teamId);
+    }
+
+    match /performance_records/{recordId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.playerUid) || sameTeam(resource.data.teamId));
+      allow create: if isCoach() && sameTeam(request.resource.data.teamId) && isValidPerformanceRecord(request.resource.data);
+      allow update: if isCoach() && sameTeam(resource.data.teamId) && isValidPerformanceRecord(request.resource.data);
+      allow delete: if isCoach() && sameTeam(resource.data.teamId);
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated() && sameTeam(resource.data.teamId);
+      allow create: if isCoach() && sameTeam(request.resource.data.teamId) && isValidAttendance(request.resource.data);
+      allow update: if isCoach() && sameTeam(resource.data.teamId) && isValidAttendance(request.resource.data);
+      allow delete: if isCoach() && sameTeam(resource.data.teamId);
+    }
+
+    match /instruction_completions/{completionId} {
+      allow read: if isAuthenticated() && sameTeam(resource.data.teamId);
+      allow create: if isAuthenticated() && isOwner(request.resource.data.playerUid) && sameTeam(request.resource.data.teamId) && isValidInstructionCompletion(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.playerUid);
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.recipientUid);
+      allow create: if isAuthenticated() && sameTeam(request.resource.data.teamId) && isValidNotification(request.resource.data);
+      allow update: if isAuthenticated() && isOwner(resource.data.recipientUid) && isValidNotification(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.recipientUid);
+    }
+  }
+}

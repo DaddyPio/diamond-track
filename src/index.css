@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-power-blue: #0066cc;
+  --color-power-yellow: #ffcc00;
+  --color-power-green: #2ecc71;
+  --color-power-red: #e74c3c;
+  --color-power-cream: #fdfcf0;
+  --color-power-border: #1a1a1a;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-power-cream text-power-border;
+  }
+}
+
+@layer components {
+  .power-card {
+    @apply bg-white border-[4px] border-power-border rounded-[2rem] shadow-[8px_8px_0_0_rgba(26,26,26,0.1)] transition-all;
+  }
+  
+  .power-button {
+    @apply border-[3px] border-power-border rounded-2xl font-black uppercase italic shadow-[4px_4px_0_0_rgba(26,26,26,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all;
+  }
+  
+  .power-input {
+    @apply bg-white border-[3px] border-power-border rounded-xl p-3 outline-none focus:ring-4 focus:ring-power-yellow/30 transition-all;
+  }
+}
