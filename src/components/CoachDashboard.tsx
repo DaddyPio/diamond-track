@@ -9,6 +9,9 @@ import { format, startOfMonth, endOfMonth, subMonths, startOfDay, eachDayOfInter
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, Radar as RadarComponent, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { cn } from '../lib/utils';
 
+/** Single training_logs listener: recent list + weekly chart (see docs/database-strategy.md). */
+const TRAINING_FEED_LIMIT = 200;
+
 export default function CoachDashboard({ setActiveTab }: { setActiveTab: (tab: string, date?: string) => void }) {
   const { profile } = useAuth();
   const [recentLogs, setRecentLogs] = useState<TrainingLog[]>([]);
@@ -52,6 +55,9 @@ export default function CoachDashboard({ setActiveTab }: { setActiveTab: (tab: s
     const lastMonthStart = startOfMonth(subMonths(now, 1));
     const lastMonthEnd = endOfMonth(subMonths(now, 1));
     const lastWeekStart = startOfDay(subDays(now, 6));
+
+    const logDate = (log: TrainingLog) =>
+      log.date?.toDate ? log.date.toDate() : new Date(log.date as string);
 
     // Players
     const usersQuery = query(
@@ -152,44 +158,22 @@ export default function CoachDashboard({ setActiveTab }: { setActiveTab: (tab: s
       }
     });
 
-    // Active Players This Month
-    const logsThisMonthQuery = query(
-      collection(db, 'training_logs'),
-      where('teamId', '==', profile.teamId),
-      where('date', '>=', monthStart),
-      where('date', '<=', monthEnd)
-    );
-    const unsubActive = onSnapshot(logsThisMonthQuery, (snapshot) => {
-      const uniquePlayers = new Set(snapshot.docs.map(doc => doc.data().playerUid));
-      setTeamStats(prev => ({ ...prev, activePlayersThisMonth: uniquePlayers.size }));
-    }, (error) => {
-      console.error("CoachDashboard: Active players listener error", error);
-    });
-
-    // Weekly Logs
-    const weeklyLogsQuery = query(
-      collection(db, 'training_logs'),
-      where('teamId', '==', profile.teamId),
-      where('date', '>=', lastWeekStart),
-      orderBy('date', 'asc')
-    );
-    const unsubWeekly = onSnapshot(weeklyLogsQuery, (snapshot) => {
-      setWeeklyLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TrainingLog)));
-    }, (error) => {
-      console.error("CoachDashboard: Weekly logs listener error", error);
-    });
-
-    // Recent Logs (All Team)
-    const logsQuery = query(
+    // Recent + weekly chart from one listener (see TRAINING_FEED_LIMIT in docs/database-strategy.md)
+    const trainingFeedQuery = query(
       collection(db, 'training_logs'),
       where('teamId', '==', profile.teamId),
       orderBy('date', 'desc'),
-      limit(20)
+      limit(TRAINING_FEED_LIMIT)
     );
-    const unsubLogs = onSnapshot(logsQuery, (snapshot) => {
-      setRecentLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TrainingLog)));
+    const unsubTrainingFeed = onSnapshot(trainingFeedQuery, (snapshot) => {
+      const all = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as TrainingLog));
+      setRecentLogs(all.slice(0, 20));
+      const weekly = all
+        .filter((log) => logDate(log) >= lastWeekStart)
+        .sort((a, b) => logDate(a).getTime() - logDate(b).getTime());
+      setWeeklyLogs(weekly);
     }, (error) => {
-      console.error("CoachDashboard: Recent logs listener error", error);
+      console.error("CoachDashboard: Training feed listener error", error);
     });
 
     // Recent Instructions
@@ -232,14 +216,49 @@ export default function CoachDashboard({ setActiveTab }: { setActiveTab: (tab: s
 
     return () => {
       unsubUsers();
-      unsubActive();
-      unsubWeekly();
-      unsubLogs();
+      unsubTrainingFeed();
       unsubInstructions();
       unsubCompletions();
       unsubNotifications();
     };
   }, [profile]);
+
+  // Monthly active player count: full month scan on interval (cheaper than a third real-time listener).
+  useEffect(() => {
+    if (!profile?.teamId) return;
+
+    const now = new Date();
+    const monthStart = startOfMonth(now);
+    const monthEnd = endOfMonth(now);
+    const logsThisMonthQuery = query(
+      collection(db, 'training_logs'),
+      where('teamId', '==', profile.teamId),
+      where('date', '>=', monthStart),
+      where('date', '<=', monthEnd)
+    );
+
+    const fetchActiveThisMonth = async () => {
+      try {
+        const snapshot = await getDocs(logsThisMonthQuery);
+        const uniquePlayers = new Set(snapshot.docs.map((d) => d.data().playerUid as string));
+        setTeamStats((prev) => ({ ...prev, activePlayersThisMonth: uniquePlayers.size }));
+      } catch (error) {
+        console.error('CoachDashboard: Active players this month fetch error', error);
+      }
+    };
+
+    void fetchActiveThisMonth();
+    const intervalId = window.setInterval(fetchActiveThisMonth, 45_000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void fetchActiveThisMonth();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [profile?.teamId]);
 
   const handleMarkAsRead = async (id: string) => {
     try {

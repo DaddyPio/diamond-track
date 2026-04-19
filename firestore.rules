@@ -217,6 +217,13 @@ service cloud.firestore {
       allow update: if isCoach() && sameTeam(teamId) && isValidTeam(request.resource.data);
     }
 
+    // Optional pre-aggregated docs for coach dashboard (see docs/firestore-aggregates.md).
+    match /teams/{teamId}/aggregates/{docId} {
+      allow read: if isAuthenticated() && sameTeam(teamId);
+      allow create, update: if isCoach() && sameTeam(teamId);
+      allow delete: if isCoach() && sameTeam(teamId);
+    }
+
     match /training_logs/{logId} {
       allow read: if isAuthenticated() && sameTeam(resource.data.teamId);
       allow create: if isAuthenticated() && isOwner(request.resource.data.playerUid) && sameTeam(request.resource.data.teamId) && isValidTrainingLog(request.resource.data);

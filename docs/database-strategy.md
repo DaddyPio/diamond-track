@@ -16,6 +16,20 @@
 
 ---
 
+## 1.1 嚴格容量假設（內部設計目標）
+
+當不確定實際流量時，可用下列**偏保守**假設做成本與讀取設計（之後可用監控數據替換）：
+
+| 項目 | 採用值 | 說明 |
+|------|--------|------|
+| 同時在線 | **100 人** | 與產品討論對齊的數量級 |
+| 同時開最重畫面 | **最多 30 位教練** 同時在 [CoachDashboard.tsx](../src/components/CoachDashboard.tsx) | 讀取成本主要由「多路 `onSnapshot`」主導；30 為保守上界 |
+| 「每分鐘約 3 次更新」 | **全隊可見資料平均每分鐘約 3 次**會讓多個 listener 跟著更新的變更 | 用於評估 fan-out，而非假設每人各寫 3 次 DB |
+
+在此假設下仍建議 **維持 Firebase**；瓶頸在 **listener 數與查詢形狀**，見下文教練儀表板優化與 [docs/firestore-aggregates.md](firestore-aggregates.md)、[docs/load-testing-checklist.md](load-testing-checklist.md)。
+
+---
+
 ## 2. Firestore 盤點
 
 ### 2.1 Collections（與 [firestore.rules](firestore.rules) 一致）
@@ -39,7 +53,7 @@
 |------|-----------|----------------|------|
 | [src/AuthContext.tsx](src/AuthContext.tsx) | `users/{uid}` | 高 | 登入後身分／隊伍變更應反映 |
 | [src/App.tsx](src/App.tsx) | `teams/{teamId}` | 中 | Logo／隊名更新；可改為手動刷新 |
-| [src/components/CoachDashboard.tsx](src/components/CoachDashboard.tsx) | users、多段 training_logs、instructions、completions、notifications | 高（教練儀表板） | 訂閱數多，為讀取成本熱點 |
+| [src/components/CoachDashboard.tsx](src/components/CoachDashboard.tsx) | users、**單一** training_logs 訂閱（合併週／最近紀錄）、本月活躍改輪詢 `getDocs`、instructions、completions、notifications | 高（教練儀表板） | 已縮減 `training_logs` 的 `onSnapshot` 重疊；仍為熱點，可再導入彙總文件 |
 | [src/components/TeamRoster.tsx](src/components/TeamRoster.tsx) | users、team doc、training_logs、attendance | 中高 | 名單與近況 |
 | [src/components/Attendance.tsx](src/components/Attendance.tsx) | attendance | 中 | 點名當日可改一次載入 + 寫入後刷新 |
 | [src/components/PerformanceEntry.tsx](src/components/PerformanceEntry.tsx) | performance_records | 中 | 多人同時編輯少見時可降級 |

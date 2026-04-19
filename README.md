@@ -39,4 +39,6 @@ View your app in AI Studio: https://ai.studio/apps/00e51c7c-23a1-4c5e-8e3b-4e9bd
 
 ## Database strategy
 
-Firestore usage, alternatives (e.g. Supabase), and the start of a data-access layer are documented in [docs/database-strategy.md](docs/database-strategy.md).
+- [docs/database-strategy.md](docs/database-strategy.md): Firestore 盤點、替代方案、嚴格容量假設、資料存取層方向。  
+- [docs/firestore-aggregates.md](docs/firestore-aggregates.md): 可選的 `teams/{teamId}/aggregates/*` 彙總設計。  
+- [docs/load-testing-checklist.md](docs/load-testing-checklist.md): 監控與多開驗證步驟。
