@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { auth, db, OperationType, handleFirestoreError } from './firebase';
+import { auth, OperationType, handleFirestoreError } from './firebase';
+import { subscribeToUserDocument } from './data/user';
 import { UserProfile } from './types';
 
 interface AuthContextType {
@@ -50,10 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
 
     console.log("AuthContext: Fetching profile for", user.uid);
-    const userDocRef = doc(db, 'users', user.uid);
-    
-    // Initial fetch and listener
-    const unsubscribe = onSnapshot(userDocRef, async (snapshot) => {
+
+    const unsubscribe = subscribeToUserDocument(user.uid, async (snapshot) => {
       if (snapshot.exists()) {
         console.log("AuthContext: Profile found");
         setProfile(snapshot.data() as UserProfile);

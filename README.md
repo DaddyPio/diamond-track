@@ -36,3 +36,7 @@ View your app in AI Studio: https://ai.studio/apps/00e51c7c-23a1-4c5e-8e3b-4e9bd
 ### Required environment variables
 
 - Add `GEMINI_API_KEY` in Cloudflare Pages project settings (`Settings > Environment variables`).
+
+## Database strategy
+
+Firestore usage, alternatives (e.g. Supabase), and the start of a data-access layer are documented in [docs/database-strategy.md](docs/database-strategy.md).

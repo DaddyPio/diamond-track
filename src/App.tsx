@@ -21,7 +21,8 @@ import {
 import { useAuth } from './AuthContext';
 import { signInWithGoogle, logout, db, auth } from './firebase';
 import { cn } from './lib/utils';
-import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
+import { subscribeToTeamDocument } from './data/team';
 
 // Components
 import Dashboard from './components/Dashboard';
@@ -50,7 +51,7 @@ export default function App() {
 
   React.useEffect(() => {
     if (profile?.teamId) {
-      const unsub = onSnapshot(doc(db, 'teams', profile.teamId), (docSnap) => {
+      const unsub = subscribeToTeamDocument(profile.teamId, (docSnap) => {
         if (docSnap.exists()) {
           setTeamData({
             name: docSnap.data().name || '',
