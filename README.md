@@ -37,9 +37,11 @@ View your app in AI Studio: https://ai.studio/apps/00e51c7c-23a1-4c5e-8e3b-4e9bd
 
 - Add `GEMINI_API_KEY` in Cloudflare Pages project settings (`Settings > Environment variables`).
 
-## User manual
+## User manual（SOP）
 
-- 可列印約 10 頁 A4 的 HTML 手冊：[docs/Diamond-Track-使用手冊.html](docs/Diamond-Track-使用手冊.html)（瀏覽器開啟後可「列印 → 另存 PDF」）。
+- 原始檔：[public/sop.html](public/sop.html)（約 10 頁 A4，可列印／另存 PDF）。  
+- 部署後網址：`/sop.html`（例如 `https://diamond-track.pages.dev/sop.html`）。  
+- App 內已提供連結：登入頁、側欄、手機選單、教練「球隊設定」視窗。說明見 [docs/USER-MANUAL.md](docs/USER-MANUAL.md)。
 
 ## Database strategy
 

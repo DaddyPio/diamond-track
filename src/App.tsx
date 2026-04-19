@@ -16,7 +16,8 @@ import {
   Settings2,
   Save,
   CalendarDays,
-  Users
+  Users,
+  BookOpen
 } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { signInWithGoogle, logout, db, auth } from './firebase';
@@ -38,6 +39,8 @@ import Attendance from './components/Attendance';
 import TrainingHistory from './components/TrainingHistory';
 import DailyLogs from './components/DailyLogs';
 import PerformanceHistory from './components/PerformanceHistory';
+
+const sopManualHref = `${import.meta.env.BASE_URL}sop.html`;
 
 export default function App() {
   const { user, profile, loading, quotaExceeded } = useAuth();
@@ -199,6 +202,16 @@ export default function App() {
             <span className="text-sm uppercase tracking-[0.3em] font-black italic">Power Pros Edition</span>
             <div className="h-1 w-12 bg-white rounded-full"></div>
           </div>
+
+          <a
+            href={sopManualHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border-[3px] border-white/40 bg-white/10 px-4 py-3 text-sm font-black italic text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+          >
+            <BookOpen className="h-5 w-5 shrink-0 text-power-yellow" />
+            使用手冊（SOP）
+          </a>
         </motion.div>
       </div>
     );
@@ -238,6 +251,15 @@ export default function App() {
           >
             登出系統 SIGN OUT
           </button>
+          <a
+            href={sopManualHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 text-sm font-black italic text-power-blue hover:underline"
+          >
+            <BookOpen className="h-4 w-4 shrink-0" />
+            使用手冊（SOP）
+          </a>
         </motion.div>
       </div>
     );
@@ -338,6 +360,16 @@ export default function App() {
             </button>
           ))}
         </nav>
+
+        <a
+          href={sopManualHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative z-10 mb-4 flex w-full items-center justify-center gap-2 rounded-2xl border-[3px] border-white/30 bg-white/10 px-4 py-3 text-sm font-black italic text-white transition-colors hover:bg-white/20"
+        >
+          <BookOpen className="h-5 w-5 shrink-0 text-power-yellow" />
+          使用手冊 SOP
+        </a>
 
         <div className="mt-auto pt-6 border-t-4 border-power-border/30 relative z-10">
           <div className="flex items-center gap-3 mb-6 px-2 bg-white/10 p-4 rounded-2xl border-2 border-white/20">
@@ -443,6 +475,16 @@ export default function App() {
                   >
                     <Save className="w-5 h-5" /> 儲存設定
                   </button>
+
+                  <a
+                    href={sopManualHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border-[3px] border-power-border bg-power-cream py-3 text-sm font-black italic text-power-border transition-colors hover:bg-white"
+                  >
+                    <BookOpen className="h-5 w-5 shrink-0 text-power-blue" />
+                    開啟使用手冊（SOP）
+                  </a>
                 </div>
               </motion.div>
             </div>
@@ -500,6 +542,16 @@ export default function App() {
                   {item.label}
                 </button>
               ))}
+              <a
+                href={sopManualHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex w-full items-center gap-4 rounded-2xl border-[3px] border-white/30 bg-white/10 px-6 py-5 text-2xl font-black italic text-white transition-colors hover:bg-white/20"
+              >
+                <BookOpen className="h-8 w-8 shrink-0 text-power-yellow" />
+                使用手冊 SOP
+              </a>
               <button 
                 onClick={logout}
                 className="w-full flex items-center gap-4 px-6 py-5 rounded-2xl font-black uppercase italic text-2xl text-white bg-power-red/80 border-[3px] border-power-border shadow-[6px_6px_0_0_rgba(0,0,0,0.3)]"

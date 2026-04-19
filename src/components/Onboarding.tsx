@@ -4,7 +4,9 @@ import { collection, getDocs, setDoc, doc, serverTimestamp, query, orderBy } fro
 import { db, auth, OperationType, handleFirestoreError } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { Team, UserProfile } from '../types';
-import { Users, User, Trophy, Plus, Check, ArrowRight, Circle as Baseball } from 'lucide-react';
+import { Users, User, Trophy, Plus, Check, ArrowRight, Circle as Baseball, BookOpen } from 'lucide-react';
+
+const sopManualHref = `${import.meta.env.BASE_URL}sop.html`;
 import { cn } from '../lib/utils';
 
 export default function Onboarding() {
@@ -246,6 +248,18 @@ export default function Onboarding() {
               </div>
             </div>
           )}
+        </div>
+
+        <div className="mt-8 border-t-2 border-power-border/10 pt-6 text-center">
+          <a
+            href={sopManualHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 text-sm font-black italic text-power-blue hover:underline"
+          >
+            <BookOpen className="h-4 w-4 shrink-0" />
+            使用手冊（SOP）
+          </a>
         </div>
       </motion.div>
     </div>
