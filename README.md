@@ -37,6 +37,10 @@ View your app in AI Studio: https://ai.studio/apps/00e51c7c-23a1-4c5e-8e3b-4e9bd
 
 - Add `GEMINI_API_KEY` in Cloudflare Pages project settings (`Settings > Environment variables`).
 
+## User manual
+
+- 可列印約 10 頁 A4 的 HTML 手冊：[docs/Diamond-Track-使用手冊.html](docs/Diamond-Track-使用手冊.html)（瀏覽器開啟後可「列印 → 另存 PDF」）。
+
 ## Database strategy
 
 - [docs/database-strategy.md](docs/database-strategy.md): Firestore 盤點、替代方案、嚴格容量假設、資料存取層方向。  

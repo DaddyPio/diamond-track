@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diamond Track 使用手冊</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --power-blue: #0066cc;
+      --power-yellow: #ffcc00;
+      --power-green: #2ecc71;
+      --power-red: #e74c3c;
+      --power-cream: #fdfcf0;
+      --power-border: #1a1a1a;
+      --shadow: 8px 8px 0 rgba(26, 26, 26, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif;
+      background: #e8e6dc;
+      color: var(--power-border);
+      line-height: 1.65;
+      font-size: 11pt;
+    }
+
+    .print-hint {
+      background: var(--power-yellow);
+      border-bottom: 4px solid var(--power-border);
+      padding: 0.75rem 1.5rem;
+      text-align: center;
+      font-weight: 900;
+      font-size: 0.85rem;
+    }
+    @media print {
+      .print-hint { display: none; }
+      body { background: white; }
+    }
+
+    @page {
+      size: A4;
+      margin: 16mm 18mm;
+    }
+
+    .sheet {
+      width: 210mm;
+      min-height: 277mm;
+      margin: 12mm auto;
+      padding: 14mm 16mm;
+      background: var(--power-cream);
+      border: 4px solid var(--power-border);
+      border-radius: 2rem;
+      box-shadow: var(--shadow);
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+    .sheet:last-of-type { page-break-after: auto; }
+
+    @media print {
+      .sheet {
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100%;
+        min-height: auto;
+        padding: 0;
+      }
+    }
+
+    .sheet::before {
+      content: "";
+      position: absolute;
+      top: -40%;
+      right: -20%;
+      width: 55%;
+      height: 55%;
+      background: radial-gradient(circle, rgba(0,102,204,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.5rem;
+      text-transform: uppercase;
+    }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 900;
+      font-style: italic;
+      margin: 1.25rem 0 0.5rem;
+      color: var(--power-blue);
+      border-left: 6px solid var(--power-yellow);
+      padding-left: 0.65rem;
+    }
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 900;
+      margin: 0.85rem 0 0.35rem;
+    }
+
+    p { margin: 0.4rem 0; }
+    ul, ol { margin: 0.35rem 0 0.5rem; padding-left: 1.25rem; }
+    li { margin: 0.2rem 0; }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      padding: 0.2rem 0.5rem;
+      border: 2px solid var(--power-border);
+      border-radius: 999px;
+      background: white;
+      margin-right: 0.35rem;
+    }
+    .tag-coach { background: var(--power-blue); color: white; border-color: var(--power-border); }
+    .tag-player { background: var(--power-green); color: white; border-color: var(--power-border); }
+
+    .card {
+      background: white;
+      border: 3px solid var(--power-border);
+      border-radius: 1rem;
+      padding: 0.85rem 1rem;
+      margin: 0.65rem 0;
+      box-shadow: 4px 4px 0 rgba(26,26,26,0.08);
+    }
+
+    .cover-title {
+      font-size: 2.75rem;
+      line-height: 1.05;
+      margin-top: 2rem;
+    }
+    .cover-title span { color: var(--power-yellow); text-shadow: 3px 3px 0 var(--power-border); }
+    .cover-sub {
+      font-size: 1.05rem;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.2em;
+      opacity: 0.85;
+      margin-top: 0.75rem;
+    }
+    .cover-badge {
+      display: inline-block;
+      margin-top: 2.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--power-yellow);
+      border: 3px solid var(--power-border);
+      border-radius: 1rem;
+      font-weight: 900;
+      font-size: 0.8rem;
+    }
+    .cover-footer {
+      position: absolute;
+      bottom: 14mm;
+      left: 16mm;
+      right: 16mm;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      opacity: 0.55;
+    }
+
+    .toc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem 1.25rem;
+      margin-top: 1rem;
+    }
+    .toc-item {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      border-bottom: 1px dashed rgba(26,26,26,0.2);
+      padding-bottom: 0.25rem;
+    }
+    .toc-item strong { flex: 0 0 auto; color: var(--power-blue); font-size: 0.75rem; }
+    .toc-item span { flex: 1; }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: var(--power-blue);
+      color: white;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 900;
+      margin-right: 0.35rem;
+      border: 2px solid var(--power-border);
+    }
+
+    .note {
+      background: rgba(255, 204, 0, 0.25);
+      border: 2px solid var(--power-border);
+      border-radius: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.82rem;
+      margin: 0.75rem 0;
+    }
+    .warn {
+      background: rgba(231, 76, 60, 0.12);
+      border-color: var(--power-red);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin: 0.5rem 0;
+    }
+    th, td {
+      border: 2px solid var(--power-border);
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+    }
+    th { background: var(--power-blue); color: white; font-weight: 900; }
+
+    .page-num {
+      position: absolute;
+      bottom: 10mm;
+      right: 16mm;
+      font-size: 0.7rem;
+      font-weight: 900;
+      opacity: 0.45;
+    }
+    @media print { .page-num { bottom: 6mm; } }
+
+    .hero-ball {
+      width: 4.5rem;
+      height: 4.5rem;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #fff 0%, #e0e8f0 100%);
+      border: 4px solid var(--power-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-hint">列印建議：瀏覽器選「另存 PDF」或列印，紙張選 A4、邊界「預設」，約可得到 10 頁精裝版面。</div>
+
+  <!-- 第 1 頁：封面 -->
+  <section class="sheet" aria-label="封面">
+    <div class="hero-ball" aria-hidden="true">⚾</div>
+    <h1 class="cover-title">Diamond <span>Track</span></h1>
+    <p class="cover-sub">實況野球風格 · 球隊管理系統</p>
+    <p style="margin-top:1.5rem; max-width: 28ch; font-weight:700;">
+      本手冊協助教練與球員快速上手：從登入、入隊到訓練紀錄、出席與成績管理。
+    </p>
+    <div class="cover-badge">使用手冊 USER MANUAL · 10 頁版</div>
+    <div class="cover-footer">POWER PROS EDITION</div>
+    <span class="page-num">01 / 10</span>
+  </section>
+
+  <!-- 第 2 頁：目錄與產品概要 -->
+  <section class="sheet" aria-label="目錄">
+    <h1>目錄 <span style="color:var(--power-blue); font-size:1.1rem;">CONTENTS</span></h1>
+    <div class="toc-grid">
+      <div class="toc-item"><strong>03</strong><span>登入與首次設定</span></div>
+      <div class="toc-item"><strong>04</strong><span>介面導覽（教練／球員）</span></div>
+      <div class="toc-item"><strong>05</strong><span>教練：儀表板與球隊設定</span></div>
+      <div class="toc-item"><strong>06</strong><span>教練：球員總覽與管理</span></div>
+      <div class="toc-item"><strong>07</strong><span>教練：訓練日誌與指示</span></div>
+      <div class="toc-item"><strong>08</strong><span>教練：出席與數據登錄</span></div>
+      <div class="toc-item"><strong>09</strong><span>球員專區功能</span></div>
+      <div class="toc-item"><strong>10</strong><span>常見問題與附錄</span></div>
+    </div>
+
+    <h2>產品概要</h2>
+    <p>Diamond Track 是給棒球／壘球隊使用的 Web 應用：教練可管理 roster、發布指示、點名、登錄測驗與比賽數據；球員可填寫訓練紀錄、查看指示與個人成績。全系統以 Google 帳號登入，資料儲存在雲端，電腦與手機瀏覽器皆可使用。</p>
+
+    <div class="card">
+      <h3 style="margin-top:0;">角色一覽</h3>
+      <p><span class="tag tag-coach">教練 COACH</span>建立或管理球隊、審核球員、完整後台功能。</p>
+      <p style="margin-top:0.5rem;"><span class="tag tag-player">球員 PLAYER</span>加入球隊後使用訓練與個人功能；新加入時可能需等待教練核准。</p>
+    </div>
+    <span class="page-num">02 / 10</span>
+  </section>
+
+  <!-- 第 3 頁：登入與首次設定 -->
+  <section class="sheet" aria-label="登入與首次設定">
+    <h1>登入與首次設定</h1>
+
+    <h2>Google 登入</h2>
+    <p><span class="step-num">1</span>開啟系統網址後，點選「登入球隊」。</p>
+    <p><span class="step-num">2</span>依畫面完成 Google 帳號選擇與授權。</p>
+    <div class="note warn">
+      <strong>內建瀏覽器（LINE、Facebook、IG 等）</strong><br />
+      Google 登入可能被阻擋。請改用右上角選單的「在瀏覽器中開啟」，或使用 Chrome／Safari／Edge 直接開啟網址。
+    </div>
+
+    <h2>首次進入：選擇身分與球隊</h2>
+    <p>第一次登入且尚無個人檔案時，會進入<strong>歡迎／註冊</strong>流程：</p>
+    <ol>
+      <li><strong>選擇身分</strong>：教練或球員。</li>
+      <li><strong>球隊</strong>：教練可<strong>建立新球隊</strong>並命名；球員則從清單<strong>選擇既有球隊</strong>加入。</li>
+      <li>確認後系統會建立您的使用者資料。球員狀態為「待審核」時，需等待教練核准後才能使用主功能。</li>
+    </ol>
+
+    <div class="note">
+      若網域未加入 Firebase 授權名單，登入後可能出現 <code>auth/unauthorized-domain</code>。請由專案管理員在 Firebase 後台「Authentication → 設定 → 授權網域」加入正式網址（例如 <code>*.pages.dev</code> 或自訂網域）。
+    </div>
+    <span class="page-num">03 / 10</span>
+  </section>
+
+  <!-- 第 4 頁：介面導覽 -->
+  <section class="sheet" aria-label="介面導覽">
+    <h1>介面導覽</h1>
+
+    <h2>主畫面配置</h2>
+    <p><strong>電腦版</strong>左側為導覽列，顯示球隊名稱與 Logo（若有設定）、功能分頁與登出。<strong>手機版</strong>以頂部選單按鈕展開相同項目。</p>
+
+    <h2>教練可見分頁（範例）</h2>
+    <table>
+      <thead><tr><th>分頁</th><th>用途簡述</th></tr></thead>
+      <tbody>
+        <tr><td>儀表板</td><td>總覽訊息、人數、團隊能力雷達圖、週訓練量、最近紀錄與指示摘要</td></tr>
+        <tr><td>球員總覽</td><td>Roster、近況與快速操作</td></tr>
+        <tr><td>教練指示</td><td>發布／追蹤指示與完成度</td></tr>
+        <tr><td>出席點名</td><td>紀錄練習出席</td></tr>
+        <tr><td>訓練日誌</td><td>依日期檢視全隊訓練紀錄</td></tr>
+        <tr><td>數據登錄</td><td>比賽／測驗成績輸入</td></tr>
+        <tr><td>球員管理</td><td>審核加入、編修資料</td></tr>
+        <tr><td>評分標準</td><td>球隊評分尺規設定</td></tr>
+      </tbody>
+    </table>
+
+    <h2>球員可見分頁（範例）</h2>
+    <p>儀表板、球員總覽、教練指示、<strong>訓練記錄</strong>、<strong>比賽與測驗成績</strong>、<strong>個人檔案</strong>。實際顯示以帳號角色為準。</p>
+    <span class="page-num">04 / 10</span>
+  </section>
+
+  <!-- 第 5 頁：教練 儀表板與設定 -->
+  <section class="sheet" aria-label="教練儀表板與設定">
+    <h1>教練：儀表板與設定</h1>
+    <p><span class="tag tag-coach">COACH</span></p>
+
+    <h2>教練主頁（儀表板）</h2>
+    <p>集中顯示：</p>
+    <ul>
+      <li><strong>訊息通知</strong>：未讀提示，可標示已讀並跳轉至指示。</li>
+      <li><strong>球員總數／本月練球出席人數</strong>：快速掌握參與度。</li>
+      <li><strong>團隊戰力分析</strong>：雷達圖與本月／近三月平均對照。</li>
+      <li><strong>全隊最近訓練</strong>：週統計長條圖，可進入訓練日誌。</li>
+      <li><strong>最近訓練紀錄摘要</strong>、<strong>已發布指示與完成度</strong>。</li>
+    </ul>
+
+    <h2>球隊與個人設定</h2>
+    <p>於側欄個人區塊點選設定圖示（教練）：可修改<strong>個人顯示名稱</strong>、<strong>球隊名稱</strong>、<strong>球隊 Logo</strong>（支援圖片網址或上傳檔案）。儲存後全隊介面會同步顯示更新後的隊名與 Logo。</p>
+
+    <div class="note">
+      儀表板為讀取較密集的頁面；若同隊多人同時在線，建議教練僅在需要時停留，並避免在極短時間內重複整理頁面，以維持良好體驗。
+    </div>
+    <span class="page-num">05 / 10</span>
+  </section>
+
+  <!-- 第 6 頁：球員總覽與管理 -->
+  <section class="sheet" aria-label="球員總覽與管理">
+    <h1>教練：球員總覽與管理</h1>
+    <p><span class="tag tag-coach">COACH</span></p>
+
+    <h2>球員總覽</h2>
+    <p>檢視全隊名單、基本資料與近期訓練／出席關聯資訊。可由此進入與單一球員相關的操作或檢視（依畫面設計）。</p>
+
+    <h2>球員管理</h2>
+    <p>處理<strong>待審核</strong>的加入申請：核准後球員即可使用完整功能。亦可在此類畫面維護球員欄位（依實際表單為準）。</p>
+
+    <h2>給教練的實務建議</h2>
+    <ul>
+      <li>新球季開始前先請全隊完成登入與入隊，減少賽中補資料壓力。</li>
+      <li>固定一位主要管理員維護 roster 與評分標準，資料較一致。</li>
+      <li>球員若更換 Google 帳號，需以新帳號重新入隊並由教練重新對應名單。</li>
+    </ul>
+    <span class="page-num">06 / 10</span>
+  </section>
+
+  <!-- 第 7 頁：訓練日誌與指示 -->
+  <section class="sheet" aria-label="訓練日誌與指示">
+    <h1>教練：訓練日誌與指示</h1>
+    <p><span class="tag tag-coach">COACH</span></p>
+
+    <h2>訓練日誌</h2>
+    <p>以<strong>日期</strong>為軸檢視全隊訓練紀錄，方便回顧課表執行狀況。可與儀表板「週統計」或「最近紀錄」互相跳轉對照。</p>
+
+    <h2>教練指示</h2>
+    <p>建立給<strong>全隊</strong>、<strong>指定球員</strong>或<strong>群組</strong>的指示內容；可追蹤閱讀與完成回報。與訓練紀錄連動時，可依指示檢視球員回饋與執行情形。</p>
+    <ul>
+      <li>發布後球員側會收到對應通知（依系統邏輯）。</li>
+      <li>完成度以指示對象人數與實際完成紀錄計算。</li>
+    </ul>
+
+    <h2>訊息與通知習慣</h2>
+    <p>建議指示標題簡短、內文明確截止或場次；重大公告可固定使用「全隊」對象，避免遺漏。</p>
+    <span class="page-num">07 / 10</span>
+  </section>
+
+  <!-- 第 8 頁：出席與數據 -->
+  <section class="sheet" aria-label="出席與數據">
+    <h1>教練：出席與數據登錄</h1>
+    <p><span class="tag tag-coach">COACH</span></p>
+
+    <h2>出席點名</h2>
+    <p>依練習日建立或更新出席紀錄，標記出席與缺席成員。資料可供儀表板「本月練球出席」等統計參考。</p>
+
+    <h2>數據登錄（比賽與測驗）</h2>
+    <p>登錄<strong>比賽</strong>或<strong>測驗</strong>類成績欄位（打擊、投球、守備等，依球隊設定）。送出後會與球員個人檔案／團隊分析連動。</p>
+
+    <h2>評分標準</h2>
+    <p>於「評分標準」維護隊上共用的分數或等第尺規，讓教練與球員對「好壞」有一致解讀，減少爭議。</p>
+
+    <div class="note">
+      大量數字建議在練習或賽後<strong>當日完成輸入</strong>，避免累積忘漏；若需修正，請依畫面上的編輯流程更新並確認已儲存。
+    </div>
+    <span class="page-num">08 / 10</span>
+  </section>
+
+  <!-- 第 9 頁：球員 -->
+  <section class="sheet" aria-label="球員專區">
+    <h1>球員專區功能</h1>
+    <p><span class="tag tag-player">PLAYER</span></p>
+
+    <h2>訓練記錄</h2>
+    <p>球員可登打個人訓練內容、類型與說明；教練可於後台檢視並給予回饋（依畫面欄位為準）。</p>
+
+    <h2>教練指示</h2>
+    <p>查看指派給自己或全隊的指示，並依要求完成與回報。完成後教練端可看到完成度變化。</p>
+
+    <h2>比賽與測驗成績、個人檔案</h2>
+    <p>檢視已登錄之比賽／測驗結果與歷史趨勢；於個人檔案維護可編輯之資料（如簡介、守位偏好等，依表單為準）。</p>
+
+    <h2>待審核狀態</h2>
+    <p>新加入球隊後若顯示「等待核准」，請聯絡教練審核。期間可登出，核准後重新登入即可進入主系統。</p>
+    <span class="page-num">09 / 10</span>
+  </section>
+
+  <!-- 第 10 頁：常見問題與附錄 -->
+  <section class="sheet" aria-label="常見問題">
+    <h1>常見問題與附錄</h1>
+
+    <h2>常見問題（FAQ）</h2>
+    <p><strong>Q：登入沒反應或沒跳出 Google？</strong><br />A：改用系統瀏覽器、關閉阻擋彈出式視窗，或於 LINE／FB 內改用「在瀏覽器中開啟」。</p>
+    <p><strong>Q：顯示 unauthorized-domain？</strong><br />A：為網域未授權。請管理員於 Firebase 授權網域加入目前網站網址。</p>
+    <p><strong>Q：資料讀取上限（Quota）？</strong><br />A：免費方案可能有讀寫上限；畫面若提示已達上限，請稍後再試或請管理員升級方案／優化查詢。</p>
+    <p><strong>Q：手機版面與電腦不同？</strong><br />A：本系統為響應式設計，功能相同，選單改為右上角展開。</p>
+
+    <h2>附錄：技術環境（簡述）</h2>
+    <p>建議使用最新版 Chrome、Edge 或 Safari。需穩定網路。部署於 Cloudflare Pages 時，正式網址應加入 Firebase 授權網域。</p>
+
+    <div class="card" style="margin-top:1.25rem;">
+      <p style="margin:0; font-size:0.82rem;"><strong>文件版本</strong>：與專案原始碼同步之使用者說明。<br />
+      <strong>Diamond Track</strong> — 實況野球風格管理系統 · Power Pros Edition</p>
+    </div>
+    <span class="page-num">10 / 10</span>
+  </section>
+
+</body>
+</html>
